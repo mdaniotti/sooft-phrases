@@ -24,6 +24,10 @@ export type PhrasesAction =
   | { type: typeof ACTIONS.SET_PHRASES; payload: Phrase[] }
   | { type: typeof ACTIONS.SET_FILTER; payload: string };
 
+/**
+ * Reducer to manage the phrases state
+ * Handles the actions: ADD_PHRASE, DELETE_PHRASE, SET_PHRASES, SET_FILTER
+ */
 export const phrasesReducer = (
   state: PhrasesState,
   action: PhrasesAction

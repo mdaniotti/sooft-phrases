@@ -1,5 +1,11 @@
 import { useState, useCallback } from "react";
 
+/**
+ * Custom Hook to manage localStorage
+ * @param key - localStorage key
+ * @param initialValue - initial value if not exists in localStorage
+ * @returns Tuple [value, setter] similar to useState
+ */
 const useLocalStorage = <T>(key: string, initialValue: T) => {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
@@ -14,15 +20,17 @@ const useLocalStorage = <T>(key: string, initialValue: T) => {
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
       try {
-        const valueToStore =
-          value instanceof Function ? value(storedValue) : value;
-        setStoredValue(valueToStore);
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        setStoredValue((prevValue) => {
+          const valueToStore =
+            value instanceof Function ? value(prevValue) : value;
+          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+          return valueToStore;
+        });
       } catch (error) {
         console.error("Error saving to localStorage:", error);
       }
     },
-    [key, storedValue]
+    [key]
   );
 
   return [storedValue, setValue] as const;

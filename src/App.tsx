@@ -1,14 +1,22 @@
 import { useMemo } from "react";
+import { Activity } from "react"; // NOTE: New React feature, see https://react.dev/reference/react/use
 import { Search } from "lucide-react";
 
-import { AddPhraseForm, SearchBar, PhraseGrid, Footer } from "./components";
+import {
+  AddPhraseForm,
+  SearchBar,
+  PhraseGrid,
+  Footer,
+  EmptyData,
+} from "./components";
 import usePhrases from "./hooks/usePhrases";
 import sooft from "./assets/sooft.png";
-import "./App.css";
+import "./App.css"; // TODO: Consider use Tailwind CSS
 
 function App() {
   const { phrases, filter, deletePhrase } = usePhrases();
 
+  // Case-insensitive filtering of phrases based on the search term
   const filteredPhrases = useMemo(() => {
     if (!filter.trim()) return phrases;
 
@@ -57,15 +65,22 @@ function App() {
             </div>
           </div>
 
-          {filter && filteredPhrases.length === 0 ? (
-            <div className="phrase-grid-empty">
-              <Search size={48} className="gray-color" />
-              <h3 className="gray-color">No results found</h3>
-              <p className="gray-color">Try with other search terms</p>
-            </div>
-          ) : (
+          {/* Show EmptyData only when there is a filter active and no results */}
+          <Activity
+            mode={filter && filteredPhrases.length === 0 ? "visible" : "hidden"}
+          >
+            <EmptyData
+              icon={<Search size={48} className="gray-color" />}
+              title="No results found"
+              description="Try with other search terms"
+            />
+          </Activity>
+          {/* Show PhraseGrid when there is no filter or when there are results */}
+          <Activity
+            mode={filter && filteredPhrases.length === 0 ? "hidden" : "visible"}
+          >
             <PhraseGrid phrases={filteredPhrases} onDelete={deletePhrase} />
-          )}
+          </Activity>
         </div>
 
         <Footer />

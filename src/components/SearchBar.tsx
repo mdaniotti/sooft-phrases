@@ -8,8 +8,9 @@ import { DEBOUNCE_TIME } from "../constants";
 const SearchBar = () => {
   const { filter, setFilter } = usePhrases();
   const [localValue, setLocalValue] = useState(filter);
-  const [debouncedValue] = useDebounce(localValue, DEBOUNCE_TIME);
+  const [debouncedValue] = useDebounce(localValue, DEBOUNCE_TIME); // Debounce to avoid searches on each keystroke
 
+  // Synchronize the debounced value with the global context
   useEffect(() => {
     setFilter(debouncedValue);
   }, [debouncedValue, setFilter]);

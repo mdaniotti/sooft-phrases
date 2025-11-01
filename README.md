@@ -1,2 +1,3 @@
 # sooft-phrases
-Aplicación que permite agregar, eliminar, y buscar frases representadas mediante cards en una matriz.
+
+Application that allows adding, deleting, and searching phrases represented by cards in a grid.

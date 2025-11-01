@@ -9,7 +9,7 @@ const AddPhraseForm = () => {
   const { addPhrase } = usePhrases();
 
   const handleSubmit = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       const trimmedText = text.trim();
@@ -39,27 +39,18 @@ const AddPhraseForm = () => {
     []
   );
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && e.ctrlKey) {
-        handleSubmit(e as unknown as React.MouseEvent<HTMLButtonElement>);
-      }
-    },
-    [handleSubmit]
-  );
-
   const remaining = MAX_LENGTH_PHRASE - text.length;
+  // Changes the counter style when there are less than 50 characters remaining
   const isNearLimit = remaining < 50;
 
   return (
     <div className="form-container">
       <div className="form-wrapper">
-        <div className="form-row">
+        <form onSubmit={handleSubmit} className="form-row">
           <div className="form-input-wrapper">
             <textarea
               value={text}
               onChange={handleChange}
-              onKeyDown={handleKeyDown}
               placeholder="Write an inspirational phrase ..."
               rows={3}
               className={`form-textarea ${error ? "error" : ""}`}
@@ -73,14 +64,14 @@ const AddPhraseForm = () => {
             </div>
           </div>
           <button
-            onClick={handleSubmit}
+            type="submit"
             disabled={!text.trim()}
             className="button-primary"
             aria-label="Add phrase"
           >
             Add Phrase
           </button>
-        </div>
+        </form>
         {error && <div className="form-error">{error}</div>}
       </div>
     </div>
