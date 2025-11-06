@@ -2,13 +2,6 @@
 
 Application that allows adding, deleting, and searching phrases represented by cards in a grid.
 
-## 📸 Screenshots
-<img width="1437" height="784" alt="Screenshot3" src="https://github.com/user-attachments/assets/eaa6f8b2-8e36-4c85-bedd-164aa77f4f27" />
-<img width="421" height="804" alt="Screenshot2" src="https://github.com/user-attachments/assets/c445df92-21cc-47f8-899b-a5ea51f7c386" />
-
-## 🎥 Demo
-https://github.com/user-attachments/assets/d657dd61-3869-4816-b9f2-c75d8e0c2caa
-
 ## 🚀 Features
 
 - ✅ Add inspirational phrases with character limit (280 chars)
