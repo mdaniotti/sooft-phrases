@@ -74,12 +74,13 @@ src/
 │   ├── EmptyData.tsx
 │   ├── Footer.tsx
 │   ├── ErrorBoundary.tsx
+│   ├── ConfirmDialog.tsx
 │   └── index.tsx
 ├── context/            # React Context & State Management
 │   ├── PhrasesContext.tsx
 │   └── phrasesCore.ts
 ├── hooks/              # Custom React hooks
-│   ├── usePhrases.ts
+│   ├── usePhrases.ts   # Context hooks with selectors (usePhrasesList, usePhrasesFilter, etc.)
 │   ├── useLocalStorage.ts
 │   └── useDebounce.ts
 ├── hoc/                # Higher Order Components
@@ -167,6 +168,29 @@ src/
 - **Testability**: Easier to test hooks in isolation
 - **Future-proof**: Easy to swap implementation (e.g., from Context to Redux)
 
+### Performance Optimization: Context Selectors
+
+**Decision**: Split context into separate contexts (Data, Filter, Actions) and provide selector hooks to prevent unnecessary rerenders.
+
+**Why**:
+
+- **Selective subscriptions**: Components only rerender when their specific context slice changes
+- **Performance**: Avoids rerenders when unrelated state changes (e.g., `SearchBar` doesn't rerender when phrases change)
+- **Scalability**: Pattern scales well as state grows
+- **Best practice**: Industry-standard pattern for Context optimization
+
+**Implementation**:
+
+- **Separate contexts**: `PhrasesDataContext`, `PhrasesFilterContext`, `PhrasesActionsContext`
+- **Selector hooks**: 
+  - `usePhrasesList()` - Only rerenders when phrases array changes
+  - `usePhrasesFilter()` - Only rerenders when filter or setFilter changes
+  - `usePhrasesAdd()` - Only rerenders when addPhrase function changes (stable)
+  - `usePhrasesDelete()` - Only rerenders when deletePhrase function changes (stable)
+- **Component optimization**: `SearchBar` and `AddPhraseForm` wrapped with `React.memo`
+
+**Result**: Components like `AddPhraseForm` and `SearchBar` no longer rerender when phrases are added/deleted, significantly improving performance.
+
 ### localStorage Persistence
 
 **Decision**: Use `localStorage` for data persistence via custom `useLocalStorage` hook.
@@ -229,12 +253,14 @@ src/
 
 ### Memoization Strategy
 
-**Decision**: Use `React.memo` on `PhraseCard` and `useMemo` for filtered phrases.
+**Decision**: Use `React.memo` on `PhraseCard`, `PhraseGrid`, `SearchBar`, `AddPhraseForm` and `useMemo` for filtered phrases.
 
 **Why**:
 
 - **Performance optimization**: Prevents unnecessary re-renders
 - `PhraseCard` memo: Only re-renders when props change (phrase data or delete handler)
+- `PhraseGrid` memo: Only re-renders when phrases array or delete handler changes
+- `SearchBar` & `AddPhraseForm` memo: Combined with selectors, prevents rerenders from unrelated state changes
 - `useMemo` for filtering: Only recalculates when `phrases` or `filter` change
 - **Measured optimization**: Only memoize where it matters (render-heavy components)
 
@@ -303,9 +329,11 @@ Using React 19's `Activity` component which is still experimental. Monitor React
 
 ### Performance Considerations
 
-- Filtering is memoized with `useMemo`
-- `PhraseCard` uses `React.memo` to prevent unnecessary re-renders
-- Debounced search reduces filtering operations
+- **Context selectors**: Separate contexts prevent unnecessary rerenders across components
+- **Memoization**: `PhraseCard`, `PhraseGrid`, `SearchBar`, and `AddPhraseForm` use `React.memo`
+- **Filtering**: Memoized with `useMemo` to avoid recalculation
+- **Debounced search**: Reduces filtering operations on every keystroke
+- **Selective subscriptions**: Components only subscribe to the context slice they need
 - Consider virtual scrolling if phrase list grows beyond 1000 items
 
 ## 🐛 Known Limitations
