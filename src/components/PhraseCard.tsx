@@ -2,6 +2,7 @@ import { memo, useCallback, useState } from "react";
 import { Trash2 } from "lucide-react";
 
 import type { Phrase } from "../context/phrasesCore";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface PhraseCardProps {
   phrase: Phrase;
@@ -20,16 +21,20 @@ const PhraseCard = memo(({ phrase, onDelete }: PhraseCardProps) => {
     setShowConfirm(false);
   }, [phrase.id, onDelete]);
 
+  const handleClose = useCallback(() => {
+    setShowConfirm(false);
+  }, []);
+
   return (
-    <div className="phrase-card">
-      <p className="phrase-card-text gray-color">{phrase.text}</p>
+    <>
+      <div className="phrase-card">
+        <p className="phrase-card-text gray-color">{phrase.text}</p>
 
-      <div className="phrase-card-footer">
-        <p className="phrase-card-date orange-color">
-          Created at {new Date(phrase.createdAt).toLocaleDateString()}
-        </p>
+        <div className="phrase-card-footer">
+          <p className="phrase-card-date orange-color">
+            Created at {new Date(phrase.createdAt).toLocaleDateString()}
+          </p>
 
-        {!showConfirm ? (
           <button
             onClick={handleDelete}
             className="phrase-card-delete-btn"
@@ -37,21 +42,19 @@ const PhraseCard = memo(({ phrase, onDelete }: PhraseCardProps) => {
           >
             <Trash2 width={18} height={18} className="orange-color" />
           </button>
-        ) : (
-          <div className="phrase-card-confirm-actions">
-            <button onClick={confirmDelete} className="button-confirm">
-              Confirm
-            </button>
-            <button
-              onClick={() => setShowConfirm(false)}
-              className="button-cancel"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
+        </div>
       </div>
-    </div>
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        onClose={handleClose}
+        onConfirm={confirmDelete}
+        title="Confirm deletion"
+        message={`Are you sure you want to delete the phrase "${phrase.text}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+    </>
   );
 });
 

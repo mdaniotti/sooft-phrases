@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState, useRef, useDeferredValue } from "react";
 import { Activity } from "react"; // NOTE: New React feature, see https://react.dev/reference/react/use
 import { Search } from "lucide-react";
 
@@ -9,25 +9,75 @@ import {
   Footer,
   EmptyData,
 } from "./components";
-import usePhrases from "./hooks/usePhrases";
+import {
+  usePhrasesList,
+  usePhrasesFilter,
+  usePhrasesDelete,
+} from "./hooks/usePhrases";
 import sooft from "./assets/sooft.png";
+import { REGEX_ESCAPE_SPECIAL_CHARACTERS } from "./constants";
 import "./App.css"; // TODO: Consider use Tailwind CSS
 
+// Escape special regex characters to prevent false positives
+const escapeRegExp = (string: string): string => {
+  return string.replace(REGEX_ESCAPE_SPECIAL_CHARACTERS, "\\$&");
+};
+
 function App() {
-  const { phrases, filter, deletePhrase } = usePhrases();
+  const phrases = usePhrasesList();
+  const { filter } = usePhrasesFilter();
+  const deletePhrase = usePhrasesDelete();
+  const [searchAnnouncement, setSearchAnnouncement] = useState("");
+  const [deleteAnnouncement, setDeleteAnnouncement] = useState("");
+  const prevPhrasesLength = useRef(phrases.length);
+  const prevFilteredLength = useRef(0);
 
-  // Case-insensitive filtering of phrases based on the search term
+  // Defer filter value to keep UI responsive during filtering of large lists
+  const deferredFilter = useDeferredValue(filter);
+
+  // Case-insensitive filtering of phrases based on the deferred search term
   const filteredPhrases = useMemo(() => {
-    if (!filter.trim()) return phrases;
+    if (!deferredFilter.trim()) return phrases;
 
-    const searchTerm = filter.toLowerCase();
-    return phrases.filter((phrase) =>
-      phrase.text.toLowerCase().includes(searchTerm)
-    );
-  }, [phrases, filter]);
+    const searchRegex = new RegExp(escapeRegExp(deferredFilter), "i");
+    return phrases.filter((phrase) => searchRegex.test(phrase.text));
+  }, [phrases, deferredFilter]);
+
+  // Announce search results when deferred filter changes
+  useEffect(() => {
+    if (deferredFilter && deferredFilter.trim().length >= 3) {
+      const count = filteredPhrases.length;
+      const message = `${count} result${count !== 1 ? "s" : ""} found`;
+      if (prevFilteredLength.current !== count) {
+        setSearchAnnouncement(message);
+        prevFilteredLength.current = count;
+      }
+    } else {
+      prevFilteredLength.current = 0;
+      setSearchAnnouncement("");
+    }
+  }, [deferredFilter, filteredPhrases.length]);
+
+  // Announce phrase deletion
+  useEffect(() => {
+    if (phrases.length < prevPhrasesLength.current) {
+      setDeleteAnnouncement("Phrase deleted");
+      // Clear announcement after a delay to allow screen reader to announce it
+      const timer = setTimeout(() => setDeleteAnnouncement(""), 1000);
+      return () => clearTimeout(timer);
+    }
+    prevPhrasesLength.current = phrases.length;
+  }, [phrases.length]);
 
   return (
     <div className="app-container">
+      {/* Screen reader announcements */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {searchAnnouncement && <div key="search">{searchAnnouncement}</div>}
+      </div>
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {deleteAnnouncement && <div key="delete">{deleteAnnouncement}</div>}
+      </div>
       <div className="app-wrapper">
         <header className="app-header">
           <img src={sooft} alt="Phrase manager" className="app-logo" />
@@ -46,13 +96,11 @@ function App() {
 
           <div className="phrases-header">
             <div className="phrases-header-left">
-              <h2 className="phrases-title">
-                {filter ? "Results" : "All Phrases"}
-              </h2>
+              <h2 className="phrases-title">All Phrases</h2>
               <SearchBar />
             </div>
             <div className="phrases-stats">
-              {filter && (
+              {deferredFilter && (
                 <span className="stat-badge">
                   {filteredPhrases.length} found
                   {filteredPhrases.length !== 1 ? "s" : ""}
@@ -67,7 +115,11 @@ function App() {
 
           {/* Show EmptyData only when there is a filter active and no results */}
           <Activity
-            mode={filter && filteredPhrases.length === 0 ? "visible" : "hidden"}
+            mode={
+              deferredFilter && filteredPhrases.length === 0
+                ? "visible"
+                : "hidden"
+            }
           >
             <EmptyData
               icon={<Search size={48} className="gray-color" />}
@@ -77,7 +129,11 @@ function App() {
           </Activity>
           {/* Show PhraseGrid when there is no filter or when there are results */}
           <Activity
-            mode={filter && filteredPhrases.length === 0 ? "hidden" : "visible"}
+            mode={
+              deferredFilter && filteredPhrases.length === 0
+                ? "hidden"
+                : "visible"
+            }
           >
             <PhraseGrid phrases={filteredPhrases} onDelete={deletePhrase} />
           </Activity>

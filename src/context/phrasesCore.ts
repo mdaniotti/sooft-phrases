@@ -36,7 +36,7 @@ export const phrasesReducer = (
     case ACTIONS.ADD_PHRASE:
       return {
         ...state,
-        phrases: [...state.phrases, action.payload],
+        phrases: [action.payload, ...state.phrases],
       };
     case ACTIONS.DELETE_PHRASE:
       return {
@@ -66,4 +66,16 @@ export type PhrasesContextValue = {
   setFilter: (filter: string) => void;
 };
 
+// Separate contexts for selective subscriptions
+export const PhrasesDataContext = createContext<Phrase[] | null>(null);
+export const PhrasesFilterContext = createContext<{
+  filter: string;
+  setFilter: (filter: string) => void;
+} | null>(null);
+export const PhrasesActionsContext = createContext<{
+  addPhrase: (text: string) => void;
+  deletePhrase: (id: number | string) => void;
+} | null>(null);
+
+// Main context (kept for backward compatibility)
 export const PhrasesContext = createContext<PhrasesContextValue | null>(null);

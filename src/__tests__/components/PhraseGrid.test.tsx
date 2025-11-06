@@ -3,6 +3,10 @@ import { render, screen, waitFor } from "../../testUtils";
 import { PhraseGrid } from "../../components/PhraseGrid";
 import type { Phrase } from "../../context/phrasesCore";
 
+jest.mock("../../components/ErrorBoundary", () =>
+  require("../../__mocks__/ErrorBoundary")
+);
+
 describe("PhraseGrid", () => {
   const mockPhrases: Phrase[] = [
     {

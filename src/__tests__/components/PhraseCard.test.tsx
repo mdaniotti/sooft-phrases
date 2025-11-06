@@ -37,9 +37,9 @@ describe("PhraseCard", () => {
     const deleteButton = screen.getByLabelText("Delete phrase");
     await user.click(deleteButton);
 
-    expect(screen.getByText("Confirm")).toBeInTheDocument();
+    expect(screen.getByText("Delete")).toBeInTheDocument();
     expect(screen.getByText("Cancel")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Delete phrase")).not.toBeInTheDocument();
+    expect(screen.getByText("Confirm deletion")).toBeInTheDocument();
   });
 
   it("should call onDelete when deletion is confirmed", async () => {
@@ -49,7 +49,7 @@ describe("PhraseCard", () => {
     const deleteButton = screen.getByLabelText("Delete phrase");
     await user.click(deleteButton);
 
-    const confirmButton = screen.getByText("Confirm");
+    const confirmButton = screen.getByText("Delete");
     await user.click(confirmButton);
 
     expect(mockOnDelete).toHaveBeenCalledWith(1);
@@ -68,6 +68,6 @@ describe("PhraseCard", () => {
 
     expect(mockOnDelete).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Delete phrase")).toBeInTheDocument();
-    expect(screen.queryByText("Confirm")).not.toBeInTheDocument();
+    expect(screen.queryByText("Delete")).not.toBeInTheDocument();
   });
 });

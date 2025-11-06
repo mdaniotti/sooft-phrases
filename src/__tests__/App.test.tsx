@@ -2,6 +2,10 @@ import userEvent from "@testing-library/user-event";
 import { render as customRender, screen, waitFor } from "../testUtils";
 import App from "../App";
 
+jest.mock("../components/ErrorBoundary", () =>
+  require("../__mocks__/ErrorBoundary")
+);
+
 describe("App", () => {
   beforeEach(() => {
     localStorage.clear();

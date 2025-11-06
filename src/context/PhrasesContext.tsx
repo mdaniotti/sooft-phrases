@@ -3,6 +3,9 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import {
   ACTIONS,
   PhrasesContext,
+  PhrasesDataContext,
+  PhrasesFilterContext,
+  PhrasesActionsContext,
   phrasesReducer,
   type Phrase,
   type PhrasesState,
@@ -54,17 +57,40 @@ export const PhrasesProvider = ({
     dispatch({ type: ACTIONS.SET_FILTER, payload: filter });
   }, []);
 
-  const value = useMemo(() => {
+  // Separate memoized values for selective subscriptions
+  const phrasesValue = useMemo(() => state.phrases, [state.phrases]);
+  const filterValue = useMemo(() => state.filter, [state.filter]);
+  
+  const filterContextValue = useMemo(
+    () => ({ filter: filterValue, setFilter }),
+    [filterValue, setFilter]
+  );
+
+  const actionsContextValue = useMemo(
+    () => ({ addPhrase, deletePhrase }),
+    [addPhrase, deletePhrase]
+  );
+
+  // Main context value (for backward compatibility)
+  const mainContextValue = useMemo(() => {
     return {
-      phrases: state.phrases,
-      filter: state.filter,
+      phrases: phrasesValue,
+      filter: filterValue,
       addPhrase,
       deletePhrase,
       setFilter,
     };
-  }, [state.phrases, state.filter, addPhrase, deletePhrase, setFilter]);
+  }, [phrasesValue, filterValue, addPhrase, deletePhrase, setFilter]);
 
   return (
-    <PhrasesContext.Provider value={value}>{children}</PhrasesContext.Provider>
+    <PhrasesContext.Provider value={mainContextValue}>
+      <PhrasesDataContext.Provider value={phrasesValue}>
+        <PhrasesFilterContext.Provider value={filterContextValue}>
+          <PhrasesActionsContext.Provider value={actionsContextValue}>
+            {children}
+          </PhrasesActionsContext.Provider>
+        </PhrasesFilterContext.Provider>
+      </PhrasesDataContext.Provider>
+    </PhrasesContext.Provider>
   );
 };

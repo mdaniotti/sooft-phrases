@@ -1,12 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, memo } from "react";
 
-import usePhrases from "../hooks/usePhrases";
+import { usePhrasesAdd } from "../hooks/usePhrases";
 import { MAX_LENGTH_PHRASE } from "../constants";
 
-const AddPhraseForm = () => {
+const AddPhraseForm = memo(() => {
   const [text, setText] = useState("");
   const [error, setError] = useState("");
-  const { addPhrase } = usePhrases();
+  const addPhrase = usePhrasesAdd();
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -76,7 +76,7 @@ const AddPhraseForm = () => {
       </div>
     </div>
   );
-};
+});
 
 AddPhraseForm.displayName = "AddPhraseForm";
 
